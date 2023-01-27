@@ -1,0 +1,19 @@
+{
+  "name": "wasaper",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Verzach3 <gabrielcorreacardenas@gmail.com>",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "@adiwajshing/keyed-db": "^0.2.4",
+    "@hapi/boom": "^10.0.0",
+    "@verzach3/baileys-edge": "^5.1.1",
+    "pino": "^8.8.0",
+    "pino-pretty": "^9.1.1",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
