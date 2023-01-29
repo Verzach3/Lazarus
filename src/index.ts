@@ -10,6 +10,7 @@ import {
 import { Boom } from "@hapi/boom";
 import { DisconnectReason } from "@verzach3/baileys-edge";
 import { msgToLazarus } from "./util.js";
+import LazarusHandler from "./lazarusHandler.js";
 const logger = MAIN_LOGGER.child({});
 // Set to "trace" to see the QR Code and more info
 logger.level = "fatal";
@@ -83,7 +84,14 @@ const startSock = async () => {
       if (upsert.type === "notify") {
         for(const msg of upsert.messages){
           // console.log(Object.keys(msg.message!))
-          msgToLazarus(msg, LazLogger);
+          const lazmsg = msgToLazarus(msg, LazLogger);
+          console.log(lazmsg);
+          if(lazmsg){
+            const handle = new LazarusHandler(lazmsg, sock,LazLogger)
+            if (lazmsg.text === "#imgTest"){
+              handle.sendImageMessage(lazmsg.from, "./nonimage.jpg");
+            }
+          }
         }
       }
     }
