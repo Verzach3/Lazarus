@@ -14,6 +14,7 @@
     "@verzach3/baileys-edge": "^5.1.1",
     "pino": "^8.8.0",
     "pino-pretty": "^9.1.1",
-    "qrcode-terminal": "^0.12.0"
+    "qrcode-terminal": "^0.12.0",
+    "zod": "^3.20.2"
   }
 }

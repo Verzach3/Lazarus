@@ -8,10 +8,14 @@ import {
   useMultiFileAuthState,
 } from "@verzach3/baileys-edge/lib/Utils";
 import { Boom } from "@hapi/boom";
-import { DisconnectReason } from "@verzach3/baileys-edge/lib/Types";
+import { DisconnectReason } from "@verzach3/baileys-edge";
+import { msgToLazarus } from "./util.js";
 const logger = MAIN_LOGGER.child({});
 // Set to "trace" to see the QR Code and more info
-logger.level = "silent";
+logger.level = "fatal";
+
+const LazLogger = MAIN_LOGGER.child({});
+LazLogger.level = "trace";
 
 
 const msgRetryCounterMap: MessageRetryMap = {};
@@ -74,13 +78,12 @@ const startSock = async () => {
     // Handle messages
     if (events["messages.upsert"]){
       const upsert = events["messages.upsert"];
-      console.log("Received message", JSON.stringify(upsert, undefined, 2));
+      // console.log("Received message", JSON.stringify(upsert, undefined, 2));
 
       if (upsert.type === "notify") {
         for(const msg of upsert.messages){
-          if(!msg.key.fromMe) {
-
-          }
+          // console.log(Object.keys(msg.message!))
+          msgToLazarus(msg, LazLogger);
         }
       }
     }
