@@ -6,7 +6,20 @@
   "license": "MIT",
   "type": "commonjs",
   "devDependencies": {
+    "concurrently": "^7.6.0",
+    "nodemon": "^2.0.20",
     "typescript": "^4.9.4"
+  },
+  "scripts": {
+    "start": "npx tsc && node dist/index.js",
+    "build": "npx tsc",
+    "dev": "concurrently \"npx tsc -w\" \"nodemon dist/index.js\""
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "*.json",
+      "node_modules"
+    ]
   },
   "dependencies": {
     "@adiwajshing/keyed-db": "^0.2.4",
