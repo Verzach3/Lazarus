@@ -1,12 +1,12 @@
 import { MessageRetryMap } from "@verzach3/baileys-edge";
 import MAIN_LOGGER from "./logger.js";
-import { makeInMemoryStore } from "@verzach3/baileys-edge/lib/Store";
-import makeWASocket from "@verzach3/baileys-edge/lib/Socket";
+import { makeInMemoryStore } from "@verzach3/baileys-edge";
+import makeWASocket from "@verzach3/baileys-edge";
 import {
   fetchLatestBaileysVersion,
   makeCacheableSignalKeyStore,
   useMultiFileAuthState,
-} from "@verzach3/baileys-edge/lib/Utils";
+} from "@verzach3/baileys-edge";
 import { Boom } from "@hapi/boom";
 import { DisconnectReason } from "@verzach3/baileys-edge";
 import { msgToLazarus } from "./util.js";

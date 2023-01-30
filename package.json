@@ -1,7 +1,7 @@
 {
   "name": "lazarus",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "author": "Verzach3 <gabrielcorreacardenas@gmail.com>",
   "license": "MIT",
   "type": "commonjs",

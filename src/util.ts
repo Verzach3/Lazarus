@@ -8,6 +8,7 @@ import { Logger } from "pino";
  * @param msg {proto.IWebMessageInfo}
  */
 export function msgToLazarus(msg: proto.IWebMessageInfo, logger: Logger): LazarusMessage | null {
+  // The group JID includes "@g.us" at the end but the participant JID ends with "@s.whatsapp.net"
   const isGroup = msg.key.remoteJid!.includes("@g.us");
   const from = isGroup ? msg.participant : msg.key.remoteJid;
   const type = getMessageType(msg);
@@ -19,6 +20,8 @@ export function msgToLazarus(msg: proto.IWebMessageInfo, logger: Logger): Lazaru
   console.log(type);
   return {
     text:
+      // A Baileys message has the text in varios places depending on the type
+      // TODO: Get the correct text for all message types in a better way
       (msg.message?.conversation || msg.message?.extendedTextMessage?.text) ??
       "",
     from: from ?? "",
