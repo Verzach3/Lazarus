@@ -1,102 +1,53 @@
-import { MessageRetryMap } from "@verzach3/baileys-edge";
-import MAIN_LOGGER from "./logger.js";
-import { makeInMemoryStore } from "@verzach3/baileys-edge";
-import makeWASocket from "@verzach3/baileys-edge";
-import {
-  fetchLatestBaileysVersion,
-  makeCacheableSignalKeyStore,
-  useMultiFileAuthState,
-} from "@verzach3/baileys-edge";
-import { Boom } from "@hapi/boom";
-import { DisconnectReason } from "@verzach3/baileys-edge";
-import { msgToLazarus } from "./util.js";
-import LazarusHandler from "./lazarusHandler.js";
-const logger = MAIN_LOGGER.child({});
-// Set to "trace" to see the QR Code and more info
-logger.level = "fatal";
+import { MessageUpsertType, proto } from "@verzach3/baileys-edge";
+import { startSock } from "./socket";
+import { msgToLazarus } from "./util";
+import MAIN_LOGGER from "./logger";
+import LazarusHandler from "./lazarusHandler";
 
 const LazLogger = MAIN_LOGGER.child({});
+
+// Set level to silent to disable logging
 LazLogger.level = "trace";
 
+async function main() {
+  const sock = await startSock();
 
-const msgRetryCounterMap: MessageRetryMap = {};
-const store = makeInMemoryStore({ logger });
+  // Handle new messages event
+  sock.ev.on("messages.upsert", (arg) => handleMessages(arg, sock));
+}
 
-// Load store from file
-store.readFromFile("./store.json");
-
-// Save store to file every 10 seconds
-setInterval(() => {
-  store.writeToFile("./store.json");
-}, 10_000);
-
-const startSock = async () => {
-  const { state, saveCreds } = await useMultiFileAuthState("baileys_auth_info");
-  const { version, isLatest } = await fetchLatestBaileysVersion();
-  const sock = makeWASocket({
-    version,
-    logger,
-    printQRInTerminal: true,
-    auth: {
-      creds: state.creds,
-      keys: makeCacheableSignalKeyStore(state.keys, logger),
-    },
-    msgRetryCounterMap,
-    generateHighQualityLinkPreview: true,
-    getMessage: async (key) => {
-      if (store) {
-        const msg = await store.loadMessage(key.remoteJid!, key.id!);
-        return msg?.message || undefined;
+function handleMessages(
+  arg: {
+    messages: proto.IWebMessageInfo[];
+    type: MessageUpsertType;
+  },
+  socket: Awaited<ReturnType<typeof startSock>>
+) {
+  const { messages, type } = arg;
+  if (type === "notify") {
+    for (const msg of messages) {
+      // Convert the message to a Lazarus message
+      const lazmsg = msgToLazarus(msg, LazLogger);
+      if (!lazmsg) {
+        LazLogger.warn("Failed to convert message to Lazarus message");
+        continue;
       }
-
-      return {
-        conversation: "Hello",
-      };
-    },
-  });
-
-  store.bind(sock.ev);
-
-  // This function is called to handle the socket events
-  sock.ev.process(async (events) => {
-    if(events["connection.update"]){
-      const update = events["connection.update"];
-      const { connection, lastDisconnect } = update;
-      if (connection === "close") {
-        if((lastDisconnect?.error as Boom)?.output?.statusCode === DisconnectReason.loggedOut){
-          // TODO: Better way to handle socket restart
-          startSock();
-        } else {
-          console.log("Conenction closed, you logged out");
-        }
+      // Create a new handler for the message
+      const handle = new LazarusHandler(lazmsg, socket, LazLogger);
+      console.log(lazmsg);
+      if(lazmsg.text === "#ping") {
+        handle.sendTextMessage(lazmsg.conversation, "Pong!");
       }
-    }
-
-    if (events["creds.update"]){
-      await saveCreds();
-    }
-
-    // Handle messages
-    if (events["messages.upsert"]){
-      const upsert = events["messages.upsert"];
-      // console.log("Received message", JSON.stringify(upsert, undefined, 2));
-
-      if (upsert.type === "notify") {
-        for(const msg of upsert.messages){
-          // console.log(Object.keys(msg.message!))
-          const lazmsg = msgToLazarus(msg, LazLogger);
-          console.log(lazmsg);
-          if(lazmsg){
-            const handle = new LazarusHandler(lazmsg, sock,LazLogger)
-            if (lazmsg.text === "#imgTest"){
-              handle.sendImageMessage(lazmsg.from, "./nonimage.jpg");
-            }
-          }
-        }
+      if (lazmsg.text === "#imgTest") {
+        handle.sendImageMessage(lazmsg.conversation, "./assets/babymetroid.png");
       }
+      if (lazmsg.text === "#reactTest") {
+        handle.sendReaction(lazmsg.conversation, "👍");
+      }
+      
+      // Do something with the message
     }
-  })
-  return sock;
-};
+  }
+}
 
-startSock();
+main().then(() => console.log("Done"));

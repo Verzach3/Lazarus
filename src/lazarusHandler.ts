@@ -1,8 +1,9 @@
-import makeWASocket, { AnyMessageContent } from "@verzach3/baileys-edge";
+import makeWASocket, {AnyMessageContent, proto } from "@verzach3/baileys-edge";
 import { LazarusMessage } from "./types";
 import { SafeURL } from "./decorators/safe";
 import { Logger } from "pino";
 
+// TODO:
 export default class LazarusHandler {
   msg: LazarusMessage;
   socket: ReturnType<typeof makeWASocket>;
@@ -12,15 +13,20 @@ export default class LazarusHandler {
   }
 
   async sendRawMessage(jid: string, content: AnyMessageContent) {
-    this.socket.sendMessage(jid, content);
+    await this.socket.sendMessage(jid, content);
   }
 
   async sendTextMessage(jid: string, text: string) {
-    this.socket.sendMessage(jid, { text: text });
+    await this.sendRawMessage(jid, {text: text});
   }
 
   @SafeURL()
   async sendImageMessage(jid: string, url: string, caption?: string) {
-    this.socket.sendMessage(jid, { image: { url: url }, caption: caption });
+    await this.sendRawMessage(jid, {image: {url: url}, caption: caption});
+  }
+
+  async sendReaction(jid: string, reaction: string, messageKey: proto.IMessageKey) {
+    if (!messageKey) throw new Error("Message key is required for reactions")
+    await this.sendRawMessage(jid, {react: {text: reaction, key: messageKey }});
   }
 }

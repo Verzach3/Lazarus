@@ -6,6 +6,7 @@ import { Logger } from "pino";
 /**
  * A function that converts a proto.IWebMessageInfo to a Lazarus message
  * @param msg {proto.IWebMessageInfo}
+ * @param logger {Logger}
  */
 export function msgToLazarus(msg: proto.IWebMessageInfo, logger: Logger): LazarusMessage | null {
   // The group JID includes "@g.us" at the end but the participant JID ends with "@s.whatsapp.net"
@@ -13,12 +14,13 @@ export function msgToLazarus(msg: proto.IWebMessageInfo, logger: Logger): Lazaru
   const from = isGroup ? msg.participant : msg.key.remoteJid;
   const type = getMessageType(msg);
   if (!type) {
-    logger.warn("msgToLazarus: Unknown message type, returning null");
+    logger.warn(`msgToLazarus: Unknown message ${Object.keys(msg)[0]}, returning null`);
     return null;
   }
   logger.info(`msgToLazarus: Message type: ${type}`)
   console.log(type);
   return {
+    messageKey: msg.key,
     text:
       // A Baileys message has the text in varios places depending on the type
       // TODO: Get the correct text for all message types in a better way

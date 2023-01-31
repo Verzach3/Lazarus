@@ -1,4 +1,6 @@
+import { proto } from "@verzach3/baileys-edge";
 export interface LazarusMessage {
+  messageKey: proto.IWebMessageKey;
   text: string;
   from: string;
   conversation: string;
