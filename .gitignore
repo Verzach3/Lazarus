@@ -4,4 +4,6 @@ baileys_auth_info/
 
 store.json
 
+*.env
+
 dist/
