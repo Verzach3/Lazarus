@@ -8,6 +8,19 @@ function SocketServer() {
         })
         ws.send("Hello! Message From Server!!")
     })
+
+    const broadcast = (data: any) => {
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify(data));
+            }
+        });
+    }
+    return {
+        server: wss,
+        broadcast,
+
+    };
 }
 
-export default { SocketServer };
+export { SocketServer };
