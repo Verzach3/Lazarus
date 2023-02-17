@@ -1,21 +1,24 @@
 import WAWebJS from "whatsapp-web.js";
-import {WebSocketServer} from "ws";
 import { SocketServer } from "./socket";
 import {readdir} from "fs/promises";
 import {existsSync, mkdirSync} from "fs";
+import path from "path";
+import {cwd} from "process";
 
-export function PluginSystem(path: string, createOnFallBack?: boolean) {
-    if (!existsSync(path) && !createOnFallBack) throw new Error("Plugins folder does not exist, please create it or set createOnFallBack to true")
-    if (!existsSync(path) && createOnFallBack) mkdirSync(path)
+export function PluginSystem(pluginsPath: string, createOnFallBack?: boolean) {
+    if (!existsSync(pluginsPath) && !createOnFallBack) throw new Error("Plugins folder does not exist, please create it or set createOnFallBack to true")
+    if (!existsSync(pluginsPath) && createOnFallBack) mkdirSync(pluginsPath)
     const plugins = new Map<string, Plugin>()
     const loadPlugins = async (wsServer?: ReturnType<typeof SocketServer>) => {
-        const files = await readdir(path)
+        const files = await readdir(pluginsPath)
         for (const file of files) {
             let plugin: any = undefined
             try {
-                plugin = await import(`${path}/${file}`)
+                plugin = (await import(`file://${path.join(cwd(), pluginsPath, file)}`)).default.default()
+                console.log(`Plugin ${plugin.name} v.${plugin.version} loaded!`)
             } catch(e) {
                 console.log(`Plugin ${file} is not valid, skipping...`)
+                console.log(e)
                 if (wsServer) wsServer.server.emit("plugins:error",`Error loading ${file}`)
                 continue
             }

@@ -1,4 +1,4 @@
-import { WebSocketServer } from "ws"
+import { WebSocketServer, WebSocket } from "ws"
 
 function SocketServer() {
     const wss = new WebSocketServer({ port: 8080 })
