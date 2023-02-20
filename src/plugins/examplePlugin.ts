@@ -1,4 +1,4 @@
-import { Plugin } from './plugins';
+import { Plugin } from '../plugins';
 export default function examplePlugin(): Plugin {
     return {
         name: "examplePlugin",
