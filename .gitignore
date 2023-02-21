@@ -3,3 +3,5 @@ node_modules
 dist/
 .wwebjs_auth
 swddist/
+
+yarn-error.log
