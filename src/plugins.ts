@@ -14,7 +14,7 @@ export function PluginSystem(pluginsPath: string, createOnFallBack?: boolean) {
         for (const file of files) {
             let plugin: any = undefined
             try {
-                plugin = (await import(`file://${path.join(cwd(), pluginsPath, file)}`)).default.default()
+                plugin = (await import(`${path.join(cwd(), pluginsPath, file)}`)).default()
                 console.log(`Plugin ${plugin.name} v.${plugin.version} loaded!`)
             } catch(e) {
                 console.log(`Plugin ${file} is not valid, skipping...`)
@@ -46,6 +46,7 @@ export function PluginSystem(pluginsPath: string, createOnFallBack?: boolean) {
         for (const plugin of plugins.values()) {
             try {
                 await plugin.onDestroy()
+                plugins.delete(plugin.name)
                 if (wsServer) wsServer.server.emit("plugins:info",`Plugin ${plugin.name} unloaded!`)
             } catch {
                 if (wsServer) wsServer.server.emit("plugins:error",`Plugin ${plugin.name} failed to unload!`)
@@ -76,11 +77,18 @@ export function PluginSystem(pluginsPath: string, createOnFallBack?: boolean) {
         }
     }
 
+    const reloadPlugins = async (client: WAWebJS.Client, wsServer?: ReturnType<typeof SocketServer>) => {
+        await destroyPlugins(wsServer)
+        await loadPlugins(wsServer)
+        await initPlugins(client, wsServer)
+    }
+
     return {
         loadPlugins,
         initPlugins,
         destroyPlugins,
         destroyPlugin,
+        reloadPlugins,
         onMessage,
     }
 }

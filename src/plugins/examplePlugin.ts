@@ -11,8 +11,7 @@ export default function examplePlugin(): Plugin {
         onMessage: async (message, client, wsServer) => {
             if (message.body.toLowerCase().split(" ")[0] === "!ping") {
                 // client.sendMessage(message.from, "Pong!");
-                message.reply("Pong!");
-                wsServer?.broadcast("Pong! sended to " + message.from);
+                wsServer?.server.emit("plugin:examplePlugin", "Pong! sended to " + message.from);
             }
         },
         onDestroy: async () => {

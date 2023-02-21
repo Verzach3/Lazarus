@@ -19,7 +19,7 @@ export default function youtubePlugin(): Plugin {
     onMessage: async (message, client, ws) => {
       if (message.body.split(" ")[0] === "!yt") return
       console.log("Invoked")
-      const id = message.body.split(" ")[1].split("=")[1]
+      const id = message.body.split(" ")[1]!.split("=")[1]
       console.log(await yt.getBasicInfo(id))
     }
   }
